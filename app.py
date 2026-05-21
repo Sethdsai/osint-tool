@@ -1,33 +1,69 @@
-import os
-import requests
-from flask import Flask, request, jsonify
-from cryptography.fernet import Fernet
+import json
+from flask import Flask, request, jsonify, render_template_string
+from backends import (
+    search_username,
+    lookup_email,
+    lookup_domain,
+    lookup_ip,
+    lookup_phone,
+    extract_url,
+)
 
 app = Flask(__name__)
-k = Fernet.generate_key()
-f = Fernet(k)
 
-def _x(d):
-    return f.encrypt(d.encode()).decode()
+HTML_PAGE = open("index.html", "r").read()
 
-def _y(d):
-    return f.decrypt(d.encode()).decode()
+@app.route("/")
+def index():
+    return render_template_string(HTML_PAGE)
 
-@app.route('/')
-def h():
-    return open('index.html').read()
+@app.route("/api/username", methods=["POST"])
+def api_username():
+    username = request.form.get("username", "").strip()
+    if not username:
+        return jsonify({"error": "Username required"}), 400
+    result = search_username(username)
+    return jsonify(result)
 
-@app.route('/extract', methods=['POST'])
-def e():
-    t = request.form.get('target')
-    if not t: return "ERROR", 400
-    try:
-        r = requests.get(t, timeout=5)
-        d = f"STATUS {r.status_code} LENGTH {len(r.text)} SERVER {r.headers.get('Server', 'UNKNOWN')}"
-    except:
-        d = "EXTRACTION FAILED"
-    enc = _x(d)
-    return _y(enc)
+@app.route("/api/email", methods=["POST"])
+def api_email():
+    email = request.form.get("email", "").strip()
+    if not email:
+        return jsonify({"error": "Email required"}), 400
+    result = lookup_email(email)
+    return jsonify(result)
+
+@app.route("/api/domain", methods=["POST"])
+def api_domain():
+    domain = request.form.get("domain", "").strip()
+    if not domain:
+        return jsonify({"error": "Domain required"}), 400
+    result = lookup_domain(domain)
+    return jsonify(result)
+
+@app.route("/api/ip", methods=["POST"])
+def api_ip():
+    ip = request.form.get("ip", "").strip()
+    if not ip:
+        return jsonify({"error": "IP required"}), 400
+    result = lookup_ip(ip)
+    return jsonify(result)
+
+@app.route("/api/phone", methods=["POST"])
+def api_phone():
+    phone = request.form.get("phone", "").strip()
+    if not phone:
+        return jsonify({"error": "Phone required"}), 400
+    result = lookup_phone(phone)
+    return jsonify(result)
+
+@app.route("/api/extract", methods=["POST"])
+def api_extract():
+    target = request.form.get("target", "").strip()
+    if not target:
+        return jsonify({"error": "URL required"}), 400
+    result = extract_url(target)
+    return jsonify(result)
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=80)
+    app.run(host="0.0.0.0", port=80)

@@ -2,15 +2,90 @@
 <html>
 <head>
 <title>OSINT TOOL</title>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
+
 <h1>OSINT TOOL</h1>
 <p>MADE BY DASHAFOUNDACC</p>
-<form action="/extract" method="POST">
-<input type="text" name="target" placeholder="ENTER URL">
-<input type="submit" value="EXTRACT">
+<hr>
+
+<h2>USERNAME SEARCH</h2>
+<p>Check 28 platforms simultaneously</p>
+<form onsubmit="handleSubmit(event, '/api/username', 'username_result')">
+<input type="text" name="username" placeholder="Enter username" required>
+<button type="submit">SEARCH</button>
 </form>
-<div id="res"></div>
+<div id="username_result"></div>
+<hr>
+
+<h2>EMAIL LOOKUP</h2>
+<p>Breach check via HIBP + MX validation + disposable detection</p>
+<form onsubmit="handleSubmit(event, '/api/email', 'email_result')">
+<input type="email" name="email" placeholder="user@example.com" required>
+<button type="submit">LOOKUP</button>
+</form>
+<div id="email_result"></div>
+<hr>
+
+<h2>DOMAIN INTELLIGENCE</h2>
+<p>WHOIS + DNS records + SSL cert + HTTP headers</p>
+<form onsubmit="handleSubmit(event, '/api/domain', 'domain_result')">
+<input type="text" name="domain" placeholder="example.com" required>
+<button type="submit">ANALYZE</button>
+</form>
+<div id="domain_result"></div>
+<hr>
+
+<h2>IP INTELLIGENCE</h2>
+<p>Geolocation from ip-api.com + ipinfo.io + reverse DNS</p>
+<form onsubmit="handleSubmit(event, '/api/ip', 'ip_result')">
+<input type="text" name="ip" placeholder="8.8.8.8" required>
+<button type="submit">TRACE</button>
+</form>
+<div id="ip_result"></div>
+<hr>
+
+<h2>PHONE ANALYSIS</h2>
+<p>Country/region identification + carrier type + format validation</p>
+<form onsubmit="handleSubmit(event, '/api/phone', 'phone_result')">
+<input type="text" name="phone" placeholder="+639123456789" required>
+<button type="submit">ANALYZE</button>
+</form>
+<div id="phone_result"></div>
+<hr>
+
+<h2>URL EXTRACTION</h2>
+<p>Page metadata + emails + phone numbers + social links</p>
+<form onsubmit="handleSubmit(event, '/api/extract', 'extract_result')">
+<input type="text" name="target" placeholder="https://example.com" required>
+<button type="submit">EXTRACT</button>
+</form>
+<div id="extract_result"></div>
+<hr>
+
+<script>
+function handleSubmit(e, endpoint, resultId) {
+    e.preventDefault();
+    var form = e.target;
+    var resultDiv = document.getElementById(resultId);
+    resultDiv.innerHTML = "<p><b>Working...</b></p>";
+    var formData = new FormData(form);
+    fetch(endpoint, {method: "POST", body: formData})
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            resultDiv.innerHTML = "<pre>" + escapeHtml(JSON.stringify(data, null, 2)) + "</pre>";
+        })
+        .catch(function(err) {
+            resultDiv.innerHTML = "<p><b>ERROR:</b> " + escapeHtml(String(err)) + "</p>";
+        });
+}
+function escapeHtml(text) {
+    var d = document.createElement("div");
+    d.appendChild(document.createTextNode(text));
+    return d.innerHTML;
+}
+</script>
 </body>
 </html>
